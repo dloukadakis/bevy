@@ -564,6 +564,12 @@ impl<A: Asset> Assets<A> {
         }
     }
 
+    /// Queues an [`AssetEvent`] to be processed by [`Assets::asset_events`].
+    #[inline]
+    pub(crate) fn queue_event(&mut self, event: AssetEvent<A>) {
+        self.queued_events.push(event);
+    }
+
     /// A system that synchronizes the state of assets in this collection with the [`AssetServer`]. This manages
     /// [`Handle`] drop events.
     pub fn track_assets(mut assets: ResMut<Self>, asset_server: Res<AssetServer>) {
@@ -599,13 +605,16 @@ impl<A: Asset> Assets<A> {
         asset_changes: Option<ResMut<AssetChanges<A>>>,
         ticks: SystemChangeTick,
     ) {
-        use AssetEvent::{Added, LoadedWithDependencies, Modified, Removed};
+        use AssetEvent::{Added, DependenciesModified, LoadedWithDependencies, Modified, Removed};
 
         if let Some(mut asset_changes) = asset_changes {
             for new_event in &assets.queued_events {
                 match new_event {
                     Removed { id } | AssetEvent::Unused { id } => asset_changes.remove(id),
-                    Added { id } | Modified { id } | LoadedWithDependencies { id } => {
+                    Added { id }
+                    | Modified { id }
+                    | LoadedWithDependencies { id }
+                    | DependenciesModified { id } => {
                         asset_changes.insert(*id, ticks.this_run());
                     }
                 };

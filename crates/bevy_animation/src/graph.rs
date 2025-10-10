@@ -855,7 +855,8 @@ pub(crate) fn thread_animation_graphs(
         match *animation_graph_asset_event {
             AssetEvent::Added { id }
             | AssetEvent::Modified { id }
-            | AssetEvent::LoadedWithDependencies { id } => {
+            | AssetEvent::LoadedWithDependencies { id }
+            | AssetEvent::DependenciesModified { id } => {
                 // Fetch the animation graph.
                 let Some(animation_graph) = animation_graphs.get(id) else {
                     continue;

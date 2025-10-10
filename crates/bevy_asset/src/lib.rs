@@ -181,6 +181,7 @@ mod handle;
 mod id;
 mod loader;
 mod loader_builders;
+mod mark_dependents_modified;
 mod path;
 mod reflect;
 mod render_asset;
@@ -209,6 +210,7 @@ pub use uuid;
 
 use crate::{
     io::{embedded::EmbeddedAssetRegistry, AssetSourceBuilder, AssetSourceBuilders, AssetSourceId},
+    mark_dependents_modified::{MarkDependentsModifiedAssetPlugin, MarkDependentsModifiedPlugin},
     processor::{AssetProcessor, Process},
 };
 use alloc::{
@@ -417,7 +419,8 @@ impl Plugin for AssetPlugin {
                 }
             }
         }
-        app.insert_resource(embedded)
+        app.add_plugins(MarkDependentsModifiedPlugin)
+            .insert_resource(embedded)
             .init_asset::<LoadedFolder>()
             .init_asset::<LoadedUntypedAsset>()
             .init_asset::<()>()
@@ -644,7 +647,8 @@ impl AssetApp for App {
                     Arc::new(AssetIndexAllocator::default()),
                 ));
         }
-        self.insert_resource(assets)
+        self.add_plugins(MarkDependentsModifiedAssetPlugin::<A>::default())
+            .insert_resource(assets)
             .allow_ambiguous_resource::<Assets<A>>()
             .add_message::<AssetEvent<A>>()
             .add_message::<AssetLoadFailedEvent<A>>()

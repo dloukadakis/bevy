@@ -58,6 +58,8 @@ pub enum AssetEvent<A: Asset> {
     Unused { id: AssetId<A> },
     /// Emitted whenever an [`Asset`] has been fully loaded (including its dependencies and all "recursive dependencies").
     LoadedWithDependencies { id: AssetId<A> },
+    /// Emitted whenever an [`Asset`] dependency has been modified.
+    DependenciesModified { id: AssetId<A> },
 }
 
 impl<A: Asset> AssetEvent<A> {
@@ -106,6 +108,10 @@ impl<A: Asset> Debug for AssetEvent<A> {
                 .debug_struct("LoadedWithDependencies")
                 .field("id", id)
                 .finish(),
+            Self::DependenciesModified { id } => f
+                .debug_struct("DependenciesModified")
+                .field("id", id)
+                .finish(),
         }
     }
 }
@@ -120,7 +126,10 @@ impl<A: Asset> PartialEq for AssetEvent<A> {
             | (
                 Self::LoadedWithDependencies { id: l_id },
                 Self::LoadedWithDependencies { id: r_id },
-            ) => l_id == r_id,
+            )
+            | (Self::DependenciesModified { id: l_id }, Self::DependenciesModified { id: r_id }) => {
+                l_id == r_id
+            }
             _ => false,
         }
     }

@@ -258,15 +258,13 @@ pub(crate) fn extract_erased_render_asset<A: ErasedRenderAsset>(
             let mut modified = <HashSet<_>>::default();
 
             for event in events.read() {
-                #[expect(
-                    clippy::match_same_arms,
-                    reason = "LoadedWithDependencies is marked as a TODO, so it's likely this will no longer lint soon."
-                )]
                 match event {
                     AssetEvent::Added { id } => {
                         needs_extracting.insert(*id);
                     }
-                    AssetEvent::Modified { id } => {
+                    AssetEvent::Modified { id }
+                    | AssetEvent::LoadedWithDependencies { id }
+                    | AssetEvent::DependenciesModified { id } => {
                         needs_extracting.insert(*id);
                         modified.insert(*id);
                     }
@@ -278,9 +276,6 @@ pub(crate) fn extract_erased_render_asset<A: ErasedRenderAsset>(
                         needs_extracting.remove(id);
                         modified.remove(id);
                         removed.insert(*id);
-                    }
-                    AssetEvent::LoadedWithDependencies { .. } => {
-                        // TODO: handle this
                     }
                 }
             }

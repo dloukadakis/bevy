@@ -730,10 +730,6 @@ impl PipelineCache {
         mut events: Extract<MessageReader<AssetEvent<Shader>>>,
     ) {
         for event in events.read() {
-            #[expect(
-                clippy::match_same_arms,
-                reason = "LoadedWithDependencies is marked as a TODO, so it's likely this will no longer lint soon."
-            )]
             match event {
                 // PERF: Instead of blocking waiting for the shader cache lock, try again next frame if the lock is currently held
                 AssetEvent::Added { id } | AssetEvent::Modified { id } => {
@@ -745,10 +741,10 @@ impl PipelineCache {
                     }
                 }
                 AssetEvent::Removed { id } => cache.remove_shader(*id),
-                AssetEvent::Unused { .. } => {}
-                AssetEvent::LoadedWithDependencies { .. } => {
-                    // TODO: handle this
-                }
+                AssetEvent::Unused { .. }
+                // Shaders don't have dependencies.
+                | AssetEvent::LoadedWithDependencies { .. }
+                | AssetEvent::DependenciesModified { .. } => {}
             }
         }
     }

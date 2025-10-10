@@ -645,10 +645,13 @@ pub fn prepare_sprite_image_bind_groups(
     // If an image has changed, the GpuImage has (probably) changed
     for event in &events.images {
         match event {
-            AssetEvent::Added { .. } |
+            AssetEvent::Added { .. }
             // Images don't have dependencies
-            AssetEvent::LoadedWithDependencies { .. } => {}
-            AssetEvent::Unused { id } | AssetEvent::Modified { id } | AssetEvent::Removed { id } => {
+            | AssetEvent::LoadedWithDependencies { .. }
+            | AssetEvent::DependenciesModified { .. } => {}
+            AssetEvent::Unused { id }
+            | AssetEvent::Modified { id }
+            | AssetEvent::Removed { id } => {
                 image_bind_groups.values.remove(id);
             }
         };
